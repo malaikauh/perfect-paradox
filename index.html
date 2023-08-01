@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Visual Novel</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+        }
+        #intro-page, #game-page {
+            display: none;
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            background-size: cover;
+            background-position: center;
+        }
+        #intro-page {
+            background-image: url("intro_background.jpg"); /* Replace with your intro background image */
+        }
+        #game-page {
+            background-image: url("game_background.jpg"); /* Replace with your game background image */
+        }
+        #play-button {
+            cursor: pointer;
+            font-size: 24px;
+            padding: 10px 20px;
+            background-color: #3498db; /* Change the play button color here */
+            color: #ffffff;
+            border: none;
+            border-radius: 5px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        #textbox {
+            position: absolute;
+            bottom: 20px;
+            width: 80%;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 10px;
+            background-color: rgba(255, 255, 255, 0.8);
+            border: 2px solid #000000;
+            border-radius: 5px;
+        }
+        #dialogue {
+            font-size: 18px;
+            text-align: left;
+            padding: 10px;
+        }
+        #continue-button {
+            display: none;
+            cursor: pointer;
+            font-size: 18px;
+            padding: 10px 20px;
+            background-color: #3498db; /* Change the continue button color here */
+            color: #ffffff;
+            border: none;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Intro Page -->
+    <div id="intro-page">
+        <button id="play-button">Play</button>
+    </div>
+
+    <!-- Game Page -->
+    <div id="game-page">
+        <div id="textbox">
+            <p id="dialogue"></p>
+            <button id="option-1" style="display: none;"></button>
+            <button id="option-2" style="display: none;"></button>
+            <button id="continue-button" style="display: none;">Continue</button>
+        </div>
+    </div>
+
+    <script>
+        // Intro Page
+        const introPage = document.getElementById('intro-page');
+        const playButton = document.getElementById('play-button');
+
+        // Game Page
+        const gamePage = document.getElementById('game-page');
+        const textbox = document.getElementById('textbox');
+        const dialogue = document.getElementById('dialogue');
+        const continueButton = document.getElementById('continue-button');
+
+        // Define choices and their corresponding branches
+        const choices = [
+            {
+                text: "Choose Option 1",
+                branch: 1,
+            },
+            {
+                text: "Choose Option 2",
+                branch: 2,
+            },
+        ];
+
+        // Define scenes and their corresponding characters
+        const scenes = [
+            {
+                name: "School",
+                characters: [
+                    {
+                        name: "Player",
+                        sprite: "player_school.png",
+                    },
+                    {
+                        name: "Friend",
+                        sprite: "friend_school.png",
+                    },
+                ],
+            },
+            {
+                name: "Park",
+                characters: [
+                    {
+                        name: "Player",
+                        sprite: "player_park.png",
+                    },
+                    {
+                        name: "Stranger",
+                        sprite: "stranger_park.png",
+                    },
+                ],
+            },
+            {
+                name: "Final Scene",
+                characters: [
+                    {
+                        name: "Player",
+                        sprite: "player_final.png",
+                    },
+                ],
+            },
+        ];
+
+        // Endings
+        const endings = {
+            good: {
+                text: "Congratulations! You got the Good Ending.",
+            },
+            neutral: {
+                text: "You got the Neutral Ending.",
+            },
+            bad: {
+                text: "Unfortunately, you got the Bad Ending.",
+            },
+        };
+
+        // Branch connections to endings
+        const branchToEnding = {
+            1: "good",    // Branch 1 leads to the Good Ending
+            2: "neutral", // Branch 2 leads to the Neutral Ending
+            // Add more branches and connections to endings as needed...
+        };
+
+        // Function to start the game when the play button is clicked
+        function startGame() {
+            introPage.style.display = 'none';
+            gamePage.style.display = 'block';
+            showChoices(); // Display initial choices when the game starts
+        }
+
+        // Function to show choices when the player reaches a decision point
+        function showChoices() {
+            dialogue.innerHTML = "What do you want to do?<br>";
+            document.getElementById('option-1').innerText = choices[0].text;
+            document.getElementById('option-1').style.display = 'block';
+            document.getElementById('option-2').innerText = choices[1].text;
+            document.getElementById('option-2').style.display = 'block';
+        }
+
+        // Function to set the scene and characters
+        function setScene(sceneIndex) {
+            const currentScene = scenes[sceneIndex];
+
+            dialogue.innerHTML = `<b>${currentScene.name}</b><br>`;
+
+            currentScene.characters.forEach(character => {
+                dialogue.innerHTML += `<img src="${character.sprite}" alt="${character.name}" style="max-height: 100px;">`;
+            });
+
+            showContinueButton();
+        }
+
+        // Function to handle the chosen branch and scenes
+        function handleBranch(branch) {
+            dialogue.innerText = '';
+            document.getElementById('option-1').style.display = 'none';
+            document.getElementById('option-2').style.display = 'none';
+            continueButton.style.display = 'none';
+
+            switch (branch) {
+                case 1:
+                    // Branch 1 - School Scene
+                    setScene(0);
+                    texts = [
+                        "You chose Option 1. This is the first line of the School Scene.",
+                        "This is the second line of the School Scene.",
+                        "And finally, this is the third line of the School Scene.",
+                        // Add more dialogue text for the School Scene...
+                    ];
+                    currentTextIndex = 0;
+                    showNextText();
+                    break;
+                case 2:
+                    // Branch 2 - Park Scene
+                    setScene(1);
+                    texts = [
+                        "You chose Option 2. This is the first line of the Park Scene.",
+                        "This is the second line of the Park Scene.",
+                        "And finally, this is the third line of the Park Scene.",
+                        // Add more dialogue text for the Park Scene...
+                    ];
+                    currentTextIndex = 0;
+                    showNextText();
+                    break;
+                // Add more cases for other branches...
+                default:
+                    // Handle default case if needed...
+                    break;
+            }
+        }
+
+        // Function to handle the ending based on the branch
+        function handleEnding(branch) {
+            const ending = branchToEnding[branch];
+            dialogue.innerText = endings[ending].text;
+            continueButton.style.display = 'none';
+        }
+
+        // Function to handle the final scene and ending based on the player's choices
+        function handleFinalScene(branch) {
+            setScene(2); // Final Scene
+            texts = [
+                "You made your final choice.",
+                // Add more dialogue text for the final scene...
+            ];
+            currentTextIndex = 0;
+            showNextText();
+
+            // Determine the ending based on the branch
+            handleEnding(branch);
+        }
+
+        // Function to show the continue button after the text finishes typing
+        function showContinueButton() {
+            continueButton.style.display = 'block';
+        }
+
+        // Function to continue to the next text or choices
+        function continueToNext() {
+            if (currentTextIndex < texts.length) {
+                showNextText();
+            } else {
+                showChoices();
+            }
+        }
+
+        // Event listeners
+        playButton.addEventListener('click', startGame);
+        continueButton.addEventListener('click', continueToNext);
+        option1.addEventListener('click', () => handleBranch(1));
+        option2.addEventListener('click', () => handleBranch(2));
+
+        /* The rest of the code related to text typing and game logic (showNextText, initializeText, etc.) is omitted here for brevity. You can copy those parts from your previous version. */
+
+    </script>
+</body>
+</html>
