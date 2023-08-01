@@ -3,16 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Visual Novel</title>
+    <title>Perfect Paradox</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: Verdana, sans-serif;
             background-color: #f0f0f0;
             margin: 0;
             padding: 0;
         }
         #intro-page, #game-page {
-            display: none;
             width: 100%;
             height: 100%;
             position: absolute;
@@ -22,39 +21,49 @@
             background-position: center;
         }
         #intro-page {
-            background-image: url("intro_background.jpg"); /* Replace with your intro background image */
+            display: block; /* Set to 'block' to make it visible initially */
+            background-image: url("intro.png"); /* Replace with your intro background image */
         }
         #game-page {
+            display: none;
             background-image: url("game_background.jpg"); /* Replace with your game background image */
         }
         #play-button {
             cursor: pointer;
-            font-size: 24px;
-            padding: 10px 20px;
-            background-color: #3498db; /* Change the play button color here */
+            font-size: 30px; /* Increase font size to make it bigger */
+            padding: 15px 30px; /* Increase padding to make it bigger */
+            background: linear-gradient(to right, rgba(0,0,0,0.8), rgba(237,5,5.8)), url(../../assets/svg/common-bg.svg);;
             color: #ffffff;
             border: none;
             border-radius: 5px;
             position: absolute;
-            top: 50%;
+            top: 60%; /* Move the play button slightly lower */
             left: 50%;
             transform: translate(-50%, -50%);
         }
         #textbox {
             position: absolute;
             bottom: 20px;
-            width: 80%;
+            width: 90%;
             max-width: 800px;
             margin: 0 auto;
-            padding: 10px;
+            padding: 40px;
             background-color: rgba(255, 255, 255, 0.8);
             border: 2px solid #000000;
             border-radius: 5px;
-        }
+            position: absolute;
+            text-align: center;
+            left: 50%;
+            transform: translate(-50%, 0);
+                }
         #dialogue {
             font-size: 18px;
             text-align: left;
             padding: 10px;
+            direction: rtl; /* Text direction from right to left */
+            white-space: nowrap; /* Avoid text wrapping */
+            overflow: hidden; /* Hide overflow text */
+            border-right: 2px solid #000000; /* Simulate typing effect */
         }
         #continue-button {
             display: none;
@@ -80,6 +89,8 @@
             <p id="dialogue"></p>
             <button id="option-1" style="display: none;"></button>
             <button id="option-2" style="display: none;"></button>
+            <button id="option-3" style="display: none;"></button>
+            <button id="option-4" style="display: none;"></button>
             <button id="continue-button" style="display: none;">Continue</button>
         </div>
     </div>
@@ -104,6 +115,18 @@
             {
                 text: "Choose Option 2",
                 branch: 2,
+            },
+            {
+                text: "Choose Option 3",
+                branch: 3,
+            },
+            {
+                text: "Choose Option 4",
+                branch: 4,
+            },
+            {
+                text: "Next",
+                branch: 0, // Use 0 for no branch (for text boxes without options)
             },
         ];
 
@@ -148,14 +171,14 @@
 
         // Endings
         const endings = {
-            good: {
-                text: "Congratulations! You got the Good Ending.",
+            Love: {
+                text: "Congratulations! You got the Love Ending.",
             },
-            neutral: {
-                text: "You got the Neutral Ending.",
+            Alone: {
+                text: "You got the Alone Ending.",
             },
-            bad: {
-                text: "Unfortunately, you got the Bad Ending.",
+            Death: {
+                text: "Unfortunately, you got the Death Ending.",
             },
         };
 
@@ -170,67 +193,71 @@
         function startGame() {
             introPage.style.display = 'none';
             gamePage.style.display = 'block';
-            showChoices(); // Display initial choices when the game starts
+            showNextText(); // Display initial text when the game starts
+        }
+
+        // Function to show the continue button after the text finishes typing
+        function showContinueButton() {
+            continueButton.style.display = 'block';
         }
 
         // Function to show choices when the player reaches a decision point
         function showChoices() {
-            dialogue.innerHTML = "What do you want to do?<br>";
-            document.getElementById('option-1').innerText = choices[0].text;
-            document.getElementById('option-1').style.display = 'block';
-            document.getElementById('option-2').innerText = choices[1].text;
-            document.getElementById('option-2').style.display = 'block';
-        }
-
-        // Function to set the scene and characters
-        function setScene(sceneIndex) {
-            const currentScene = scenes[sceneIndex];
-
-            dialogue.innerHTML = `<b>${currentScene.name}</b><br>`;
-
-            currentScene.characters.forEach(character => {
-                dialogue.innerHTML += `<img src="${character.sprite}" alt="${character.name}" style="max-height: 100px;">`;
-            });
-
-            showContinueButton();
+            if (texts[currentTextIndex].options) {
+                dialogue.innerHTML = texts[currentTextIndex].text + "<br>";
+                document.getElementById('option-1').innerText = texts[currentTextIndex].options[0].text;
+                document.getElementById('option-1').style.display = 'block';
+                document.getElementById('option-2').innerText = texts[currentTextIndex].options[1].text;
+                document.getElementById('option-2').style.display = 'block';
+            } else {
+                // No options, hide the option buttons
+                document.getElementById('option-1').style.display = 'none';
+                document.getElementById('option-2').style.display = 'none';
+            }
         }
 
         // Function to handle the chosen branch and scenes
         function handleBranch(branch) {
-            dialogue.innerText = '';
-            document.getElementById('option-1').style.display = 'none';
-            document.getElementById('option-2').style.display = 'none';
-            continueButton.style.display = 'none';
+            const selectedOption = texts[currentTextIndex].options[branch - 1];
 
-            switch (branch) {
-                case 1:
-                    // Branch 1 - School Scene
-                    setScene(0);
-                    texts = [
-                        "You chose Option 1. This is the first line of the School Scene.",
-                        "This is the second line of the School Scene.",
-                        "And finally, this is the third line of the School Scene.",
-                        // Add more dialogue text for the School Scene...
-                    ];
-                    currentTextIndex = 0;
-                    showNextText();
-                    break;
-                case 2:
-                    // Branch 2 - Park Scene
-                    setScene(1);
-                    texts = [
-                        "You chose Option 2. This is the first line of the Park Scene.",
-                        "This is the second line of the Park Scene.",
-                        "And finally, this is the third line of the Park Scene.",
-                        // Add more dialogue text for the Park Scene...
-                    ];
-                    currentTextIndex = 0;
-                    showNextText();
-                    break;
-                // Add more cases for other branches...
-                default:
-                    // Handle default case if needed...
-                    break;
+            // Check if the selected option has a branch
+            if (selectedOption.branch !== undefined) {
+                // Branch exists, handle it as before
+                continueButton.style.display = 'none';
+
+                switch (selectedOption.branch) {
+                    case 1:
+                        // Branch 1 - School Scene
+                        setScene(0);
+                        texts = [
+                            "You chose Option 1. This is the first line of the School Scene.",
+                            "This is the second line of the School Scene.",
+                            "And finally, this is the third line of the School Scene.",
+                            // Add more dialogue text for the School Scene...
+                        ];
+                        currentTextIndex = 0;
+                        showNextText();
+                        break;
+                    case 2:
+                        // Branch 2 - Park Scene
+                        setScene(1);
+                        texts = [
+                            "You chose Option 2. This is the first line of the Park Scene.",
+                            "This is the second line of the Park Scene.",
+                            "And finally, this is the third line of the Park Scene.",
+                            // Add more dialogue text for the Park Scene...
+                        ];
+                        currentTextIndex = 0;
+                        showNextText();
+                        break;
+                    // Add more cases for other branches...
+                    default:
+                        // Handle default case if needed...
+                        break;
+                }
+            } else {
+                // The selected option does not have a branch, handle the final scene and ending
+                handleFinalScene(branch);
             }
         }
 
@@ -255,15 +282,14 @@
             handleEnding(branch);
         }
 
-        // Function to show the continue button after the text finishes typing
-        function showContinueButton() {
-            continueButton.style.display = 'block';
-        }
-
         // Function to continue to the next text or choices
         function continueToNext() {
             if (currentTextIndex < texts.length) {
-                showNextText();
+                if (texts[currentTextIndex].options) {
+                    showChoices();
+                } else {
+                    showNextText();
+                }
             } else {
                 showChoices();
             }
@@ -274,9 +300,44 @@
         continueButton.addEventListener('click', continueToNext);
         option1.addEventListener('click', () => handleBranch(1));
         option2.addEventListener('click', () => handleBranch(2));
+        option3.addEventListener('click', () => handleBranch(3));
+        option4.addEventListener('click', () => handleBranch(4));
 
-        /* The rest of the code related to text typing and game logic (showNextText, initializeText, etc.) is omitted here for brevity. You can copy those parts from your previous version. */
+         // Variables for text typing effect
+        let currentTextIndex = 0;
+        let currentCharacterIndex = 0;
+        let isTextTyping = false;
 
+        // Function to initialize the text typing
+        function initializeText() {
+            isTextTyping = true;
+            dialogue.innerHTML = "";
+            typeText();
+        }
+
+        // Function for text typing effect
+        function typeText() {
+            if (currentCharacterIndex < texts[currentTextIndex].length) {
+                dialogue.innerHTML += texts[currentTextIndex].charAt(currentCharacterIndex);
+                currentCharacterIndex++;
+                setTimeout(typeText, 50); // Adjust the typing speed here (in milliseconds)
+            } else {
+                isTextTyping = false;
+                showContinueButton(); // Show the continue button after the text finishes typing
+            }
+        }
+
+        // Function to show the next text
+        function showNextText() {
+            if (!isTextTyping) {
+                currentCharacterIndex = 0;
+                if (currentTextIndex < texts.length) {
+                    initializeText();
+                } else {
+                    showChoices();
+                }
+            }
+        }
     </script>
 </body>
 </html>
